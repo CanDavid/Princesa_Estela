@@ -15,15 +15,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  probe:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Marcar workflow iniciado
-        run: |
-          git tag -f pages-workflow-started "$GITHUB_SHA"
-          git push --force origin refs/tags/pages-workflow-started
-
   test:
     runs-on: ubuntu-latest
     steps:
@@ -65,17 +56,9 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Marcar Pages habilitado
-        run: |
-          git tag -f pages-configured "$GITHUB_SHA"
-          git push --force origin refs/tags/pages-configured
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-      - name: Marcar artefacto preparado
-        run: |
-          git tag -f pages-artifact "$GITHUB_SHA"
-          git push --force origin refs/tags/pages-artifact
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
