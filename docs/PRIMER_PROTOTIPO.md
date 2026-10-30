@@ -1,25 +1,41 @@
 # Primer prototipo de Princesa Estela
 
-## Decisiones confirmadas
-- Juego web táctil para Ona y Pau, con Estela y su cazamariposas.
-- Bichitos volando despacio desde el inicio, con sonido.
-- Tocar una posición hace que Estela realice un gesto de captura hacia allí.
-- Acertar captura al bicho, suma puntos y muestra una estrellita.
-- Fallar no resta puntos ni vidas; se puede seguir intentando.
-- Escenario inicial: castillo, camino, árboles y fuente, siguiendo los dibujos.
-- Niveles con objetivos de puntos y dificultad creciente, reutilizando el escenario al principio.
-- Nivel superado: hada saliendo del castillo con brillos y botón «Siguiente nivel».
+## Decisiones implementadas
 
-## Tareas para Codex
-- [ ] Crear inicio con título ESTELA y botón INICIO.
-- [ ] Recrear el escenario a partir de los bocetos.
-- [ ] Añadir bichos lentos, vuelo y sonido tras pulsar INICIO.
-- [ ] Implementar captura por toque, gesto de red, puntos y estrellita.
-- [ ] Mantener el juego sin penalizaciones por fallo.
-- [ ] Añadir transición de nivel con hada y botón.
-- [ ] Probar en móvil y tablet con la familia.
+- Juego web táctil en español para Ona y Pau, con Estela y su cazamariposas.
+- Orientación horizontal; en vertical se pide girar el dispositivo.
+- Tocar una posición hace que Estela lance la red hacia allí.
+- Acertar captura al bicho suma una estrella y reproduce una celebración visual y sonora.
+- Fallar no resta puntos ni vidas y no existe límite de tiempo.
+- Escenario original con castillo, camino, árboles, flores y fuente, siguiendo los dibujos.
+- Tres niveles en el mismo escenario con objetivos de 5, 8 y 12 capturas y dificultad creciente.
+- Tras los niveles 1 y 2 aparece el hada con el botón «Siguiente nivel».
+- El tercer nivel termina con «¡Aventura completada!» y permite volver a jugar.
+- Música y efectos originales con control para silenciarlos durante la sesión.
 
-## Pendiente de aclarar
-El comentario posterior de mover a Estela con el dedo no concreta un control nuevo: conservar la captura por toque y consultar a David antes de añadir arrastre. Faltan cantidades de puntos, número de niveles, progresión y villano/desafío final. Las cuestiones técnicas se consultan con David.
+## Controles
 
-Estado: planificación; todavía no hay juego implementado.
+- **Pantalla táctil o ratón:** tocar o pulsar cerca de un bicho para lanzar la red.
+- **INICIO:** comienza la partida y permite al navegador activar el audio.
+- **Sonido:** botón de altavoz en la esquina superior derecha.
+- **Botones:** también accesibles mediante teclado.
+
+## Progresión
+
+| Nivel | Capturas | Bichos simultáneos | Velocidad |
+|---|---:|---:|---:|
+| 1 | 5 | 3 | Lenta |
+| 2 | 8 | 4 | Suave |
+| 3 | 12 | 5 | Moderada |
+
+## Validación familiar pendiente
+
+- Probar el tamaño real de las zonas de captura en móvil y tablet.
+- Confirmar que la velocidad del tercer nivel sigue siendo cómoda para Ona y Pau.
+- Ajustar volumen y frecuencia de los sonidos después de una partida completa.
+
+## Fuera de esta versión
+
+No incluye selección de personaje, villano, jefe final, vidas, cronómetro, guardado de progreso ni una composición específica para pantalla vertical.
+
+Estado: primera versión jugable implementada; pendiente de pruebas con la familia.

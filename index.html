@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#6ec8ff" />
+    <meta name="description" content="Princesa Estela, un juego táctil infantil de capturar bichitos voladores." />
+    <title>Princesa Estela</title>
+  </head>
+  <body>
+    <main id="app" aria-label="Juego Princesa Estela">
+      <div id="game-canvas" aria-hidden="true"></div>
+      <div id="game-ui">
+        <div id="loading-screen" class="screen-panel is-visible" aria-live="polite">
+          <p class="eyebrow">Preparando la aventura…</p>
+        </div>
+
+        <section id="title-screen" class="screen-panel" aria-labelledby="game-title">
+          <div class="title-card">
+            <p class="eyebrow">Una aventura de Ona y Pau</p>
+            <h1 id="game-title">ESTELA</h1>
+            <p class="title-subtitle">¡Atrapa a los bichitos con tu cazamariposas!</p>
+            <button id="start-button" class="primary-button" type="button">INICIO</button>
+          </div>
+        </section>
+
+        <header id="hud" class="hud" aria-live="polite">
+          <div class="hud-pill"><span>NIVEL</span><strong id="level-value">1</strong></div>
+          <div class="hud-pill score-pill"><span>ESTRELLAS</span><strong><span id="score-value">0</span>/<span id="target-value">5</span></strong></div>
+          <button id="mute-button" class="icon-button" type="button" aria-label="Silenciar sonido" aria-pressed="false">🔊</button>
+        </header>
+
+        <section id="complete-screen" class="screen-panel" aria-labelledby="complete-title">
+          <div class="modal-card celebration-card">
+            <p class="sparkle-row" aria-hidden="true">✦ ⭐ ✦</p>
+            <h2 id="complete-title">¡NIVEL SUPERADO!</h2>
+            <p>¡El hada ha salido del castillo para celebrarlo!</p>
+            <button id="next-button" class="primary-button" type="button">SIGUIENTE NIVEL</button>
+          </div>
+        </section>
+
+        <section id="final-screen" class="screen-panel" aria-labelledby="final-title">
+          <div class="modal-card celebration-card final-card">
+            <p class="sparkle-row" aria-hidden="true">⭐ ✦ 🧚 ✦ ⭐</p>
+            <h2 id="final-title">¡AVENTURA COMPLETADA!</h2>
+            <p>Estela y el hada celebran contigo. ¡Lo has conseguido!</p>
+            <button id="replay-button" class="primary-button" type="button">JUGAR OTRA VEZ</button>
+          </div>
+        </section>
+
+        <aside id="rotate-screen" role="status" aria-label="Gira el dispositivo">
+          <div class="rotate-icon" aria-hidden="true">↻</div>
+          <h2>Gira la pantalla</h2>
+          <p>La aventura de Estela se juega en horizontal.</p>
+        </aside>
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
