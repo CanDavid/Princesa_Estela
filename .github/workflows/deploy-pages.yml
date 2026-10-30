@@ -56,9 +56,17 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Marcar Pages habilitado
+        run: |
+          git tag -f pages-configured "$GITHUB_SHA"
+          git push --force origin refs/tags/pages-configured
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+      - name: Marcar artefacto preparado
+        run: |
+          git tag -f pages-artifact "$GITHUB_SHA"
+          git push --force origin refs/tags/pages-artifact
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
