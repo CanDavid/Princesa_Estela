@@ -8,38 +8,58 @@ async function scorePoints(page: Page, amount: number): Promise<void> {
 
 test.use({ viewport: { width: 1280, height: 720 } });
 
-test('permite completar los ocho niveles y volver a jugar', async ({ page }) => {
-  const targets = [12, 14, 16, 18, 20, 22, 24, 26];
+test('cada enjambre nace completo, disminuye y permite avanzar', async ({ page }) => {
   await page.goto('./');
   await expect(page.getByRole('heading', { name: 'ESTELA' })).toBeVisible();
   await page.getByRole('button', { name: 'INICIO' }).click();
   await expect(page.locator('#hud')).toHaveClass(/is-visible/);
   await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
+  await expect(page.locator('#level-value')).toHaveText('1');
+  await expect(page.locator('#target-value')).toHaveText('12');
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(12);
+  await scorePoints(page, 1);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(11);
+  await page.waitForTimeout(500);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(11);
+  await scorePoints(page, 11);
+  await expect(page.getByRole('heading', { name: '¡NIVEL SUPERADO!' })).toBeVisible();
+  await expect(page.locator('#complete-level-time')).toHaveText(/^\d{2}:\d{2}\.\d$/);
+  await expect(page.locator('#complete-total-time')).toHaveText(/^\d{2}:\d{2}\.\d$/);
+  await page.getByRole('button', { name: '¡A POR EL SIGUIENTE NIVEL!' }).click();
+  await expect(page.locator('#level-value')).toHaveText('2');
+  await expect(page.locator('#score-value')).toHaveText('0');
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(14);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
+});
 
-  for (const [index, target] of targets.entries()) {
-    const level = index + 1;
-    await expect(page.locator('#level-value')).toHaveText(String(level));
-    await expect(page.locator('#target-value')).toHaveText(String(target));
-    await scorePoints(page, target);
+test('el noveno nivel empieza con sus 28 cacas rápidas', async ({ page }) => {
+  await page.goto('./');
+  await expect(page.getByRole('heading', { name: 'ESTELA' })).toBeVisible();
+  await page.evaluate(() => window.__ESTELA_TEST__?.startLevel(9));
+  await expect(page.locator('#level-value')).toHaveText('9');
+  await expect(page.locator('#target-value')).toHaveText('28');
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(28);
+});
 
-    if (level < targets.length) {
-      await expect(page.getByRole('heading', { name: '¡NIVEL SUPERADO!' })).toBeVisible();
-      await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Complete']);
-      await page.getByRole('button', { name: '¡A POR EL SIGUIENTE NIVEL!' }).click();
-      await expect(page.locator('#score-value')).toHaveText('0');
-      await expect(page.locator('#complete-screen')).not.toHaveClass(/is-visible/);
-      await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
-      await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugPosition())).toBeTruthy();
-    } else {
-      await expect(page.getByRole('heading', { name: '¡AVENTURA COMPLETADA!' })).toBeVisible();
-      await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Final']);
-    }
+test('el jefe permite elegir hechizo y cae después de cinco impactos', async ({ page }) => {
+  await page.goto('./');
+  await expect(page.getByRole('heading', { name: 'ESTELA' })).toBeVisible();
+  await page.evaluate(() => window.__ESTELA_TEST__?.startLevel(10));
+  await expect(page.locator('#spell-bar')).toHaveClass(/is-visible/);
+  await expect(page.locator('#score-label')).toHaveText('HECHIZOS');
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(1);
+  await page.getByRole('button', { name: '⚡ RAYO' }).click();
+  await expect(page.getByRole('button', { name: '⚡ RAYO' })).toHaveAttribute('aria-pressed', 'true');
+  for (let hit = 1; hit <= 5; hit += 1) {
+    const boss = await page.evaluate(() => window.__ESTELA_TEST__?.bugPosition());
+    await page.mouse.click(boss?.x ?? 820, boss?.y ?? 310);
+    await expect(page.locator('#score-value')).toHaveText(String(hit));
   }
-
+  await expect(page.getByRole('heading', { name: '¡AVENTURA COMPLETADA!' })).toBeVisible();
+  await expect(page.locator('#final-level-time')).toHaveText(/^\d{2}:\d{2}\.\d$/);
+  await expect(page.locator('#final-total-time')).toHaveText(/^\d{2}:\d{2}\.\d$/);
   await page.getByRole('button', { name: 'JUGAR OTRA VEZ' }).click();
   await expect(page.locator('#level-value')).toHaveText('1');
-  await expect(page.locator('#score-value')).toHaveText('0');
-  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
 });
 
 test('el control de sonido cambia de estado durante la sesión', async ({ page }) => {

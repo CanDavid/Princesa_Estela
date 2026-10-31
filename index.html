@@ -26,15 +26,26 @@
 
         <header id="hud" class="hud" aria-live="polite">
           <div class="hud-pill"><span>NIVEL</span><strong id="level-value">1</strong></div>
-          <div class="hud-pill score-pill"><span>ESTRELLAS</span><strong><span id="score-value">0</span>/<span id="target-value">5</span></strong></div>
+          <div class="hud-pill timer-pill"><span>TIEMPO</span><strong id="timer-value">00:00.0</strong></div>
+          <div class="hud-pill score-pill"><span id="score-label">CACAS</span><strong><span id="score-value">0</span>/<span id="target-value">12</span></strong></div>
           <button id="mute-button" class="icon-button" type="button" aria-label="SILENCIAR SONIDO" aria-pressed="false">🔊</button>
         </header>
+
+        <div id="spell-bar" class="spell-bar" role="group" aria-label="ELIGE UN HECHIZO">
+          <p>ELIGE UN HECHIZO</p>
+          <div>
+            <button class="spell-button is-selected" type="button" data-spell="star" aria-pressed="true">⭐ ESTRELLA</button>
+            <button class="spell-button" type="button" data-spell="lightning" aria-pressed="false">⚡ RAYO</button>
+            <button class="spell-button" type="button" data-spell="rainbow" aria-pressed="false">🌈 ARCOÍRIS</button>
+          </div>
+        </div>
 
         <section id="complete-screen" class="screen-panel" aria-labelledby="complete-title">
           <div class="modal-card celebration-card">
             <p class="sparkle-row" aria-hidden="true">✦ ⭐ ✦</p>
             <h2 id="complete-title">¡NIVEL SUPERADO!</h2>
             <p>¡EL HADA HA SALIDO DEL CASTILLO PARA CELEBRARLO!</p>
+            <p class="time-result">NIVEL: <strong id="complete-level-time">00:00.0</strong> · TOTAL: <strong id="complete-total-time">00:00.0</strong></p>
             <button id="next-button" class="primary-button" type="button">¡A POR EL SIGUIENTE NIVEL!</button>
           </div>
         </section>
@@ -44,6 +55,7 @@
             <p class="sparkle-row" aria-hidden="true">⭐ ✦ 🧚 ✦ ⭐</p>
             <h2 id="final-title">¡AVENTURA COMPLETADA!</h2>
             <p>ESTELA Y EL HADA CELEBRAN CONTIGO. ¡LO HAS CONSEGUIDO!</p>
+            <p class="time-result">ÚLTIMO NIVEL: <strong id="final-level-time">00:00.0</strong> · JUEGO COMPLETO: <strong id="final-total-time">00:00.0</strong></p>
             <button id="replay-button" class="primary-button" type="button">JUGAR OTRA VEZ</button>
           </div>
         </section>

@@ -3,12 +3,13 @@ import { LEVELS } from '../../src/game/levels';
 import { GameSession } from '../../src/game/session';
 
 describe('configuración de niveles', () => {
-  it('define ocho niveles cada vez más exigentes', () => {
-    expect(LEVELS.map(({ targetScore, maxBugs }) => [targetScore, maxBugs])).toEqual([
-      [12, 5], [14, 5], [16, 6], [18, 6], [20, 7], [22, 7], [24, 8], [26, 9],
+  it('define nueve enjambres cerrados y un jefe final', () => {
+    const swarms = LEVELS.filter((level) => level.kind === 'swarm');
+    expect(swarms.map(({ targetScore, bugCount }) => [targetScore, bugCount])).toEqual([
+      [12, 12], [14, 14], [16, 16], [18, 18], [20, 20], [22, 22], [24, 24], [26, 26], [28, 28],
     ]);
     expect(LEVELS.every((level) => level.minSpeed < level.maxSpeed)).toBe(true);
-    expect(LEVELS.map(({ minSpeed, maxSpeed }) => [minSpeed, maxSpeed])).toEqual([
+    expect(swarms.map(({ minSpeed, maxSpeed }) => [minSpeed, maxSpeed])).toEqual([
       [190, 250],
       [230, 300],
       [270, 350],
@@ -17,16 +18,16 @@ describe('configuración de niveles', () => {
       [410, 540],
       [470, 620],
       [540, 720],
+      [620, 840],
     ]);
-    for (let index = 1; index < LEVELS.length; index += 1) {
-      const current = LEVELS[index]!;
-      const previous = LEVELS[index - 1]!;
+    for (let index = 1; index < swarms.length; index += 1) {
+      const current = swarms[index]!;
+      const previous = swarms[index - 1]!;
       expect(current.targetScore).toBeGreaterThan(previous.targetScore);
-      expect(current.maxBugs).toBeGreaterThanOrEqual(previous.maxBugs);
       expect(current.minSpeed).toBeGreaterThan(previous.minSpeed);
       expect(current.maxSpeed).toBeGreaterThan(previous.maxSpeed);
-      expect(current.respawnDelayMs).toBeLessThan(previous.respawnDelayMs);
     }
+    expect(LEVELS[9]).toMatchObject({ id: 10, kind: 'boss', targetScore: 5, bugCount: 1 });
   });
 });
 
@@ -63,16 +64,35 @@ describe('GameSession', () => {
     expect(session.status).toBe('playing');
   });
 
-  it('termina la aventura al alcanzar el objetivo del octavo nivel', () => {
+  it('termina la aventura al derrotar al jefe del décimo nivel', () => {
     const session = new GameSession();
     session.startGame();
     for (let levelIndex = 0; levelIndex < LEVELS.length; levelIndex += 1) {
       for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture(true);
       if (levelIndex < LEVELS.length - 1) session.advanceLevel();
     }
-    expect(session.level.id).toBe(8);
-    expect(session.score).toBe(26);
+    expect(session.level.id).toBe(10);
+    expect(session.score).toBe(5);
     expect(session.status).toBe('game-complete');
+  });
+
+  it('mide cada nivel y el juego sin contar pausas ni celebraciones', () => {
+    let now = 1_000;
+    const session = new GameSession(() => now);
+    session.startGame();
+    now += 2_500;
+    for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture(true);
+    expect(session.timing).toEqual({ levelMs: 2_500, totalMs: 2_500 });
+
+    now += 8_000;
+    session.advanceLevel();
+    now += 1_200;
+    session.pauseTimer();
+    now += 5_000;
+    session.resumeTimer();
+    now += 800;
+    for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture(true);
+    expect(session.timing).toEqual({ levelMs: 2_000, totalMs: 4_500 });
   });
 
   it('reinicia el progreso sin cambiar la preferencia de sonido', () => {

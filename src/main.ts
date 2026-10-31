@@ -61,16 +61,34 @@ ui.bind({
     audio.setMuted(session.muted);
     ui.setMuted(session.muted);
   },
+  selectSpell: (spell) => {
+    const scene = game.scene.getScene('Game');
+    if (scene instanceof GameScene) scene.selectSpell(spell);
+  },
 });
 
 document.addEventListener('visibilitychange', () => {
   game.loop.sleep();
-  if (!document.hidden) game.loop.wake();
+  if (document.hidden) session.pauseTimer();
+  else {
+    session.resumeTimer();
+    game.loop.wake();
+  }
   void audio.handleVisibility(document.hidden);
 });
 
 if (import.meta.env.DEV) {
   window.__ESTELA_TEST__ = {
+    startLevel: (levelNumber) => {
+      session.startGame();
+      for (let index = 1; index < levelNumber; index += 1) {
+        for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture(true);
+        session.advanceLevel();
+      }
+      for (const scene of game.scene.getScenes(true)) game.scene.stop(scene.scene.key);
+      game.scene.start('Game');
+      game.scene.bringToTop('Game');
+    },
     scorePoint: () => {
       const scene = game.scene.getScene('Game');
       if (scene instanceof GameScene) scene.debugScorePoint();
@@ -79,23 +97,29 @@ if (import.meta.env.DEV) {
       const scene = game.scene.getScene('Game');
       return scene instanceof GameScene ? scene.debugBugPosition() : undefined;
     },
+    bugCount: () => {
+      const scene = game.scene.getScene('Game');
+      return scene instanceof GameScene ? scene.debugBugCount() : 0;
+    },
     characterState: () => {
       const scene = game.scene.getScene('Game');
       return scene instanceof GameScene ? scene.debugCharacterState() : undefined;
     },
     activeScenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
-    state: () => ({ level: session.levelIndex + 1, score: session.score, status: session.status, muted: session.muted }),
+    state: () => ({ level: session.levelIndex + 1, score: session.score, status: session.status, muted: session.muted, timing: session.timing }),
   };
 }
 
 declare global {
   interface Window {
     __ESTELA_TEST__?: {
+      startLevel: (levelNumber: number) => void;
       scorePoint: () => void;
       bugPosition: () => { x: number; y: number } | undefined;
+      bugCount: () => number;
       characterState: () => { estela: string; lumi: string; lumiVisible: boolean } | undefined;
       activeScenes: () => string[];
-      state: () => { level: number; score: number; status: string; muted: boolean };
+      state: () => { level: number; score: number; status: string; muted: boolean; timing: { levelMs: number; totalMs: number } };
     };
   }
 }

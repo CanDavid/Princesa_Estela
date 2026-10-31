@@ -3,6 +3,7 @@ import { GameAudio } from './audio';
 import { createArtTextures } from './art';
 import { createEstelaRig, preloadCharacter, registerCharacterAnimations, type EstelaRig } from './character';
 import { GameSession } from './session';
+import type { SpellType } from './spells';
 import { GameUi } from '../ui';
 
 interface SceneServices {
@@ -16,6 +17,7 @@ interface FlyingBug extends Phaser.GameObjects.Image {
   velocityY: number;
   turnAt: number;
   phase: number;
+  isBoss: boolean;
 }
 
 function background(scene: Phaser.Scene, shade = 0xffffff): Phaser.GameObjects.Image {
@@ -82,6 +84,8 @@ export class GameScene extends Phaser.Scene {
   private inputLocked = false;
   private ending = false;
   private estelaRig?: EstelaRig;
+  private selectedSpell: SpellType = 'star';
+  private lastTimerUpdate = 0;
 
   constructor(private readonly services: SceneServices) {
     super('Game');
@@ -91,14 +95,17 @@ export class GameScene extends Phaser.Scene {
     this.bugs.length = 0;
     this.inputLocked = false;
     this.ending = false;
+    this.selectedSpell = 'star';
+    this.lastTimerUpdate = 0;
     background(this);
     this.add.rectangle(640, 360, 1280, 720, 0xfff4ca, 0.035);
     this.estelaRig = createEstelaRig(this, 150, 654, 0.88).setDepth(8);
     this.add.image(215, 614, 'net').setScale(0.34).setRotation(-0.23).setDepth(7).setAlpha(0.86);
 
     const { level } = this.services.session;
-    this.services.ui.showGame(level.id, this.services.session.score, level.targetScore);
-    for (let index = 0; index < level.maxBugs; index += 1) this.spawnBug(index * 120);
+    this.services.ui.showGame(level.id, this.services.session.score, level.targetScore, level.kind === 'boss');
+    if (level.kind === 'boss') this.spawnBoss();
+    else this.spawnSwarm(level.bugCount);
 
     this.input.on('pointerdown', this.handleCapture, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.input.off('pointerdown', this.handleCapture, this));
@@ -112,6 +119,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
+    if (time - this.lastTimerUpdate >= 80) {
+      this.services.ui.updateTimer(this.services.session.timing);
+      this.lastTimerUpdate = time;
+    }
     const seconds = delta / 1000;
     for (const bug of this.bugs) {
       if (!bug.active) continue;
@@ -125,12 +136,16 @@ export class GameScene extends Phaser.Scene {
       bug.x += bug.velocityX * seconds;
       bug.y += bug.velocityY * seconds;
       bug.angle = Math.sin(time / 210 + bug.phase) * 5;
-      if (bug.x < 345 || bug.x > 1205) {
-        bug.x = Phaser.Math.Clamp(bug.x, 345, 1205);
+      const minX = bug.isBoss ? 475 : 345;
+      const maxX = bug.isBoss ? 1080 : 1205;
+      const minY = bug.isBoss ? 205 : 135;
+      const maxY = bug.isBoss ? 430 : 505;
+      if (bug.x < minX || bug.x > maxX) {
+        bug.x = Phaser.Math.Clamp(bug.x, minX, maxX);
         bug.velocityX *= -1;
       }
-      if (bug.y < 135 || bug.y > 505) {
-        bug.y = Phaser.Math.Clamp(bug.y, 135, 505);
+      if (bug.y < minY || bug.y > maxY) {
+        bug.y = Phaser.Math.Clamp(bug.y, minY, maxY);
         bug.velocityY *= -1;
       }
     }
@@ -138,7 +153,20 @@ export class GameScene extends Phaser.Scene {
 
   debugScorePoint(): void {
     if (this.ending || this.services.session.status !== 'playing') return;
-    this.scoreHit(730, 280, undefined);
+    if (this.services.session.level.kind === 'boss') this.scoreBossHit(730, 280);
+    else {
+      const bug = this.bugs.find((candidate) => candidate.active);
+      if (bug) this.scoreHit(bug.x, bug.y, bug);
+    }
+  }
+
+  debugBugCount(): number {
+    return this.bugs.filter((bug) => bug.active).length;
+  }
+
+  selectSpell(spell: SpellType): void {
+    this.selectedSpell = spell;
+    this.services.ui.setSelectedSpell(spell);
   }
 
   debugBugPosition(): { x: number; y: number } | undefined {
@@ -157,6 +185,10 @@ export class GameScene extends Phaser.Scene {
 
   private handleCapture(pointer: Phaser.Input.Pointer): void {
     if (this.inputLocked || this.ending || this.services.session.status !== 'playing') return;
+    if (this.services.session.level.kind === 'boss') {
+      this.handleBossSpell(pointer);
+      return;
+    }
     this.inputLocked = true;
     const targetX = Phaser.Math.Clamp(pointer.worldX, 275, 1220);
     const targetY = Phaser.Math.Clamp(pointer.worldY, 90, 590);
@@ -212,8 +244,60 @@ export class GameScene extends Phaser.Scene {
       this.time.delayedCall(700, () => {
         this.scene.start(result.status === 'game-complete' ? 'Final' : 'Complete');
       });
-    } else if (bug) {
-      this.time.delayedCall(this.services.session.level.respawnDelayMs, () => this.spawnBug());
+    }
+  }
+
+  private handleBossSpell(pointer: Phaser.Input.Pointer): void {
+    const boss = this.bugs.find((bug) => bug.active && bug.isBoss);
+    if (!boss) return;
+    this.inputLocked = true;
+    this.estelaRig?.play('magic', true).playLumi('react', true);
+    this.services.audio.net();
+
+    const targetX = Phaser.Math.Clamp(pointer.worldX, 300, 1210);
+    const targetY = Phaser.Math.Clamp(pointer.worldY, 90, 590);
+    const didHit = Phaser.Math.Distance.Between(pointer.worldX, pointer.worldY, boss.x, boss.y) <= 180;
+    const colors: Record<SpellType, number> = { star: 0xffd21f, lightning: 0x67ddff, rainbow: 0xff65c5 };
+    const texture = this.selectedSpell === 'rainbow' ? 'glow' : 'star';
+    const projectile = this.add.image(225, 545, texture)
+      .setTint(colors[this.selectedSpell])
+      .setScale(this.selectedSpell === 'lightning' ? 0.32 : 0.4)
+      .setDepth(18);
+    if (this.selectedSpell === 'lightning') projectile.setScale(0.22, 0.72).setAngle(18);
+
+    this.tweens.add({
+      targets: projectile,
+      x: targetX,
+      y: targetY,
+      angle: projectile.angle + 220,
+      scale: this.selectedSpell === 'rainbow' ? 1.1 : 0.72,
+      duration: 260,
+      ease: 'Quad.in',
+      onComplete: () => {
+        projectile.destroy();
+        if (didHit) this.scoreBossHit(boss.x, boss.y);
+        else {
+          this.services.session.recordCapture(false);
+          this.services.audio.miss();
+          this.showTapRipple(targetX, targetY, colors[this.selectedSpell]);
+        }
+        if (!this.ending) this.inputLocked = false;
+      },
+    });
+  }
+
+  private scoreBossHit(x: number, y: number): void {
+    const boss = this.bugs.find((bug) => bug.active && bug.isBoss);
+    const result = this.services.session.recordCapture(true);
+    this.services.ui.updateScore(this.services.session.level.id, result.score, result.target);
+    this.services.audio.sparkle();
+    this.showStar(x, y);
+    if (boss) this.tweens.add({ targets: boss, alpha: 0.3, duration: 85, yoyo: true, repeat: 2 });
+
+    if (result.completed) {
+      this.ending = true;
+      this.inputLocked = true;
+      this.time.delayedCall(900, () => this.scene.start('Final'));
     }
   }
 
@@ -229,23 +313,43 @@ export class GameScene extends Phaser.Scene {
     this.tweens.add({ targets: ring, scale: 2.7, alpha: 0, duration: 430, onComplete: () => ring.destroy() });
   }
 
-  private spawnBug(delay = 0): void {
-    this.time.delayedCall(delay, () => {
-      if (this.ending || this.services.session.status !== 'playing') return;
-      const speed = Phaser.Math.FloatBetween(this.services.session.level.minSpeed, this.services.session.level.maxSpeed);
-      const angle = Phaser.Math.FloatBetween(-Math.PI, Math.PI);
-      const bug = this.add.image(
-        Phaser.Math.Between(365, 1180),
-        Phaser.Math.Between(150, 485),
-        'bug',
-      ).setScale(Phaser.Math.FloatBetween(0.66, 0.84)).setDepth(6) as FlyingBug;
-      bug.velocityX = Math.cos(angle) * speed;
-      bug.velocityY = Math.sin(angle) * speed * 0.58;
-      bug.turnAt = this.time.now + Phaser.Math.Between(1200, 2600);
-      bug.phase = Phaser.Math.FloatBetween(0, Math.PI * 2);
-      this.bugs.push(bug);
-      this.tweens.add({ targets: bug, scaleX: bug.scaleX * 1.08, scaleY: bug.scaleY * 0.94, duration: 300, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-    });
+  private spawnSwarm(count: number): void {
+    const columns = Math.ceil(Math.sqrt(count * 2.35));
+    const rows = Math.ceil(count / columns);
+    const scaleMin = count >= 24 ? 0.54 : count >= 18 ? 0.59 : 0.64;
+    for (let index = 0; index < count; index += 1) {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const x = 380 + ((column + 0.5) / columns) * 800 + Phaser.Math.Between(-14, 14);
+      const y = 140 + ((row + 0.5) / rows) * 350 + Phaser.Math.Between(-12, 12);
+      this.spawnBug(x, y, Phaser.Math.FloatBetween(scaleMin, scaleMin + 0.12));
+    }
+  }
+
+  private spawnBug(x: number, y: number, scale: number): void {
+    const speed = Phaser.Math.FloatBetween(this.services.session.level.minSpeed, this.services.session.level.maxSpeed);
+    const angle = Phaser.Math.FloatBetween(-Math.PI, Math.PI);
+    const bug = this.add.image(x, y, 'bug').setScale(scale).setDepth(6) as FlyingBug;
+    bug.velocityX = Math.cos(angle) * speed;
+    bug.velocityY = Math.sin(angle) * speed * 0.58;
+    bug.turnAt = this.time.now + Phaser.Math.Between(900, 2100);
+    bug.phase = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    bug.isBoss = false;
+    this.bugs.push(bug);
+    this.tweens.add({ targets: bug, scaleX: bug.scaleX * 1.08, scaleY: bug.scaleY * 0.94, duration: 300, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+  }
+
+  private spawnBoss(): void {
+    const speed = Phaser.Math.FloatBetween(this.services.session.level.minSpeed, this.services.session.level.maxSpeed);
+    const angle = Phaser.Math.FloatBetween(-Math.PI, Math.PI);
+    const boss = this.add.image(820, 310, 'bug').setScale(2.2).setDepth(7) as FlyingBug;
+    boss.velocityX = Math.cos(angle) * speed;
+    boss.velocityY = Math.sin(angle) * speed * 0.45;
+    boss.turnAt = this.time.now + 1800;
+    boss.phase = 0;
+    boss.isBoss = true;
+    this.bugs.push(boss);
+    this.tweens.add({ targets: boss, scaleX: 2.32, scaleY: 2.08, duration: 520, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
   }
 }
 
@@ -263,7 +367,7 @@ export class CompleteScene extends Phaser.Scene {
     addFloatingStars(this, 18, new Phaser.Geom.Rectangle(650, 80, 500, 470));
     this.tweens.add({ targets: [fairy, glow], y: '-=22', duration: 980, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     this.services.audio.fanfare();
-    this.services.ui.showComplete();
+    this.services.ui.showComplete(this.services.session.timing);
   }
 }
 
@@ -282,6 +386,6 @@ export class FinalScene extends Phaser.Scene {
     this.tweens.add({ targets: estela.root, angle: { from: -2, to: 2 }, duration: 650, yoyo: true, repeat: -1 });
     this.tweens.add({ targets: fairy, y: '-=28', duration: 820, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     this.services.audio.fanfare();
-    this.services.ui.showFinal();
+    this.services.ui.showFinal(this.services.session.timing);
   }
 }

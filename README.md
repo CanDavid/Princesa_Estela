@@ -1,6 +1,6 @@
 # Princesa Estela
 
-Juego web táctil infantil creado para Ona y Pau. Ayuda a Estela a capturar bichitos voladores con su cazamariposas a lo largo de ocho niveles, sin vidas, tiempo ni penalizaciones.
+Juego web táctil infantil creado para Ona y Pau. Ayuda a Estela a capturar cacas voladoras y a derrotar un jefe final a lo largo de diez niveles, sin vidas ni penalizaciones.
 
 Estela utiliza su diseño animado oficial y está acompañada por Lumi, una estrella flotante que reacciona a la magia y celebra cada nivel.
 
@@ -30,8 +30,11 @@ npm run check      # Tipos, pruebas y compilación
 1. Pulsa **INICIO** para activar el sonido y empezar.
 2. Toca un bichito para que Estela lance la red hacia él.
 3. Cada captura suma una estrella. Fallar no resta nada.
-4. Completa los ocho niveles, desde 12 capturas en el primero hasta 26 en el último.
-5. Pulsa **¡A POR EL SIGUIENTE NIVEL!** tras superar los niveles 1 a 7.
+4. En los niveles 1 a 9, todas las cacas están presentes desde el principio y cada captura deja una menos.
+5. En el nivel 10, elige un hechizo y acierta cinco veces a la caca gigante.
+6. Pulsa **¡A POR EL SIGUIENTE NIVEL!** tras superar los niveles 1 a 9.
+
+El cronómetro del HUD mide el tiempo de juego. Cada celebración muestra el tiempo del nivel y el acumulado de la aventura; las pausas y el tiempo esperando en la celebración no cuentan.
 
 La música y los efectos se pueden silenciar en cualquier momento. La partida comienza de nuevo al recargar la página.
 
