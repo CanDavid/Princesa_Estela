@@ -8,9 +8,9 @@ export interface LevelConfig {
 }
 
 export const LEVELS: readonly LevelConfig[] = [
-  { id: 1, targetScore: 5, maxBugs: 3, minSpeed: 35, maxSpeed: 55, respawnDelayMs: 650 },
-  { id: 2, targetScore: 8, maxBugs: 4, minSpeed: 50, maxSpeed: 75, respawnDelayMs: 550 },
-  { id: 3, targetScore: 12, maxBugs: 5, minSpeed: 65, maxSpeed: 95, respawnDelayMs: 450 },
+  { id: 1, targetScore: 5, maxBugs: 3, minSpeed: 95, maxSpeed: 135, respawnDelayMs: 500 },
+  { id: 2, targetScore: 8, maxBugs: 4, minSpeed: 135, maxSpeed: 190, respawnDelayMs: 400 },
+  { id: 3, targetScore: 12, maxBugs: 5, minSpeed: 190, maxSpeed: 250, respawnDelayMs: 300 },
 ] as const;
 
 export function getLevel(index: number): LevelConfig {

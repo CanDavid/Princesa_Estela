@@ -26,14 +26,15 @@
 
 | Nivel | Capturas | Bichos simultáneos | Velocidad |
 |---|---:|---:|---:|
-| 1 | 5 | 3 | Lenta |
-| 2 | 8 | 4 | Suave |
-| 3 | 12 | 5 | Moderada |
+| 1 | 5 | 3 | 95–135 px/s |
+| 2 | 8 | 4 | 135–190 px/s |
+| 3 | 12 | 5 | 190–250 px/s |
 
 ## Validación familiar pendiente
 
 - Probar el tamaño real de las zonas de captura en móvil y tablet.
-- Confirmar que la velocidad del tercer nivel sigue siendo cómoda para Ona y Pau.
+- Los bichos vuelan más rápido, aparecen antes y aumentan en número en cada nivel.
+- Toda la interfaz visible utiliza mayúsculas para facilitar la lectura de Ona.
 - Ajustar volumen y frecuencia de los sonidos después de una partida completa.
 
 ## Fuera de esta versión

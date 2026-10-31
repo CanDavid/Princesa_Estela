@@ -30,7 +30,8 @@ npm run check      # Tipos, pruebas y compilación
 1. Pulsa **INICIO** para activar el sonido y empezar.
 2. Toca un bichito para que Estela lance la red hacia él.
 3. Cada captura suma una estrella. Fallar no resta nada.
-4. Consigue 5, 8 y 12 estrellas para completar los tres niveles.
+4. Consigue 5, 8 y 12 estrellas para completar los tres niveles, cada uno con más bichos y mayor velocidad.
+5. Pulsa **¡A POR EL SIGUIENTE NIVEL!** tras superar los niveles 1 y 2.
 
 La música y los efectos se pueden silenciar en cualquier momento. La partida comienza de nuevo al recargar la página.
 

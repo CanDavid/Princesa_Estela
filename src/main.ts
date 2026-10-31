@@ -41,6 +41,7 @@ ui.bind({
     game.scene.start('Game');
   },
   next: () => {
+    if (session.status !== 'level-complete') return;
     session.advanceLevel();
     game.scene.start('Game');
   },

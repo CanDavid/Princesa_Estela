@@ -6,6 +6,17 @@ describe('configuración de niveles', () => {
   it('define una progresión suave de tres niveles', () => {
     expect(LEVELS.map(({ targetScore, maxBugs }) => [targetScore, maxBugs])).toEqual([[5, 3], [8, 4], [12, 5]]);
     expect(LEVELS.every((level) => level.minSpeed < level.maxSpeed)).toBe(true);
+    expect(LEVELS.map(({ minSpeed, maxSpeed }) => [minSpeed, maxSpeed])).toEqual([
+      [95, 135],
+      [135, 190],
+      [190, 250],
+    ]);
+    for (let index = 1; index < LEVELS.length; index += 1) {
+      const current = LEVELS[index]!;
+      const previous = LEVELS[index - 1]!;
+      expect(current.minSpeed).toBeGreaterThanOrEqual(previous.maxSpeed);
+      expect(current.respawnDelayMs).toBeLessThan(previous.respawnDelayMs);
+    }
   });
 });
 

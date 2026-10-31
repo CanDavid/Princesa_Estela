@@ -52,6 +52,7 @@ button {
 #game-ui {
   z-index: 2;
   pointer-events: none;
+  text-transform: uppercase;
 }
 
 .screen-panel {

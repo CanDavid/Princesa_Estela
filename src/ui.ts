@@ -68,7 +68,7 @@ export class GameUi {
 
   setMuted(muted: boolean): void {
     this.muteButton.textContent = muted ? '🔇' : '🔊';
-    this.muteButton.setAttribute('aria-label', muted ? 'Activar sonido' : 'Silenciar sonido');
+    this.muteButton.setAttribute('aria-label', muted ? 'ACTIVAR SONIDO' : 'SILENCIAR SONIDO');
     this.muteButton.setAttribute('aria-pressed', String(muted));
   }
 

@@ -17,13 +17,17 @@ test('permite completar los tres niveles y volver a jugar', async ({ page }) => 
   await scorePoints(page, 5);
   await expect(page.getByRole('heading', { name: '¡NIVEL SUPERADO!' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'SIGUIENTE NIVEL' }).click();
+  await page.getByRole('button', { name: '¡A POR EL SIGUIENTE NIVEL!' }).click();
   await expect(page.locator('#level-value')).toHaveText('2');
+  await expect(page.locator('#score-value')).toHaveText('0');
+  await expect(page.locator('#complete-screen')).not.toHaveClass(/is-visible/);
   await scorePoints(page, 8);
   await expect(page.getByRole('heading', { name: '¡NIVEL SUPERADO!' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'SIGUIENTE NIVEL' }).click();
+  await page.getByRole('button', { name: '¡A POR EL SIGUIENTE NIVEL!' }).click();
   await expect(page.locator('#level-value')).toHaveText('3');
+  await expect(page.locator('#score-value')).toHaveText('0');
+  await expect(page.locator('#complete-screen')).not.toHaveClass(/is-visible/);
   await scorePoints(page, 12);
   await expect(page.getByRole('heading', { name: '¡AVENTURA COMPLETADA!' })).toBeVisible();
 
@@ -35,10 +39,10 @@ test('permite completar los tres niveles y volver a jugar', async ({ page }) => 
 test('el control de sonido cambia de estado durante la sesión', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'INICIO' }).click();
-  const mute = page.getByRole('button', { name: 'Silenciar sonido' });
+  const mute = page.getByRole('button', { name: 'SILENCIAR SONIDO' });
   await expect(mute).toHaveAttribute('aria-pressed', 'false');
   await mute.click();
-  await expect(page.getByRole('button', { name: 'Activar sonido' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'ACTIVAR SONIDO' })).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('un fallo no puntúa y un toque sobre un bicho sí', async ({ page }) => {
@@ -63,7 +67,18 @@ test('un fallo no puntúa y un toque sobre un bicho sí', async ({ page }) => {
 test('muestra el aviso de orientación en vertical', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('./');
-  await expect(page.getByRole('status', { name: 'Gira el dispositivo' })).toBeVisible();
+  await expect(page.getByRole('status', { name: 'GIRA EL DISPOSITIVO' })).toBeVisible();
   await page.setViewportSize({ width: 844, height: 390 });
-  await expect(page.getByRole('status', { name: 'Gira el dispositivo' })).toBeHidden();
+  await expect(page.getByRole('status', { name: 'GIRA EL DISPOSITIVO' })).toBeHidden();
+});
+
+test('muestra todos los textos visibles en mayúsculas', async ({ page }) => {
+  await page.goto('./');
+  const titleText = await page.locator('#title-screen').innerText();
+  expect(titleText).toBe(titleText.toLocaleUpperCase('es'));
+  await page.getByRole('button', { name: 'INICIO' }).click();
+  await scorePoints(page, 5);
+  await expect(page.getByRole('heading', { name: '¡NIVEL SUPERADO!' })).toBeVisible();
+  const completeText = await page.locator('#complete-screen').innerText();
+  expect(completeText).toBe(completeText.toLocaleUpperCase('es'));
 });
