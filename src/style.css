@@ -203,6 +203,16 @@ h1 {
   margin-left: auto;
 }
 
+.bowser-pill {
+  border-color: rgb(226 168 255 / 90%);
+  color: #68208d;
+  background: rgb(250 232 255 / 94%);
+}
+
+.bowser-pill strong {
+  color: #8f35bd;
+}
+
 .timer-pill strong {
   min-width: 112px;
   font-variant-numeric: tabular-nums;
@@ -278,9 +288,37 @@ h1 {
   outline-offset: 3px;
 }
 
+#failed-screen,
 #complete-screen,
 #final-screen {
   background: radial-gradient(circle, rgb(255 244 170 / 22%), rgb(79 20 91 / 56%));
+}
+
+#failed-screen {
+  background: radial-gradient(circle, rgb(205 132 255 / 20%), rgb(45 13 65 / 66%));
+}
+
+.failed-card {
+  border-color: #d98cff;
+  background: linear-gradient(145deg, rgb(255 255 255 / 97%), rgb(239 211 255 / 96%));
+  box-shadow: inset 0 5px 0 white, 0 12px 0 #672489, 0 24px 60px rgb(38 10 55 / 52%);
+}
+
+.failed-card h2 {
+  color: #b64ee1;
+  -webkit-text-stroke-color: #57206d;
+  text-shadow: 0 5px 0 #7d339f;
+}
+
+.bowser-row {
+  margin: 0 0 8px;
+  color: #9e3bca;
+  font-size: clamp(27px, 4vw, 54px);
+}
+
+.failed-card .bowser-result {
+  margin-top: -8px;
+  color: #7d2b9e;
 }
 
 .modal-card {

@@ -5,6 +5,7 @@ interface UiActions {
   start: () => void;
   next: () => void;
   replay: () => void;
+  retry: () => void;
   toggleMute: () => void;
   selectSpell: (spell: SpellType) => void;
 }
@@ -27,12 +28,15 @@ export class GameUi {
   private readonly loading = byId('loading-screen');
   private readonly title = byId('title-screen');
   private readonly complete = byId('complete-screen');
+  private readonly failed = byId('failed-screen');
   private readonly final = byId('final-screen');
   private readonly hud = byId('hud');
   private readonly levelValue = byId('level-value');
   private readonly scoreValue = byId('score-value');
   private readonly targetValue = byId('target-value');
   private readonly scoreLabel = byId('score-label');
+  private readonly bowserValue = byId('bowser-value');
+  private readonly bowserLimitValue = byId('bowser-limit-value');
   private readonly timerValue = byId('timer-value');
   private readonly spellBar = byId('spell-bar');
   private readonly muteButton = byId<HTMLButtonElement>('mute-button');
@@ -41,6 +45,7 @@ export class GameUi {
     byId<HTMLButtonElement>('start-button').addEventListener('click', actions.start);
     byId<HTMLButtonElement>('next-button').addEventListener('click', actions.next);
     byId<HTMLButtonElement>('replay-button').addEventListener('click', actions.replay);
+    byId<HTMLButtonElement>('retry-button').addEventListener('click', actions.retry);
     this.muteButton.addEventListener('click', actions.toggleMute);
     for (const button of this.spellBar.querySelectorAll<HTMLButtonElement>('[data-spell]')) {
       button.addEventListener('click', () => {
@@ -63,13 +68,24 @@ export class GameUi {
     byId<HTMLButtonElement>('start-button').focus({ preventScroll: true });
   }
 
-  showGame(level: number, score: number, target: number, boss = false): void {
+  showGame(level: number, score: number, target: number, bowserScore: number, bowserLimit: number, boss = false): void {
     this.hideAll();
     this.hud.classList.add('is-visible');
     this.scoreLabel.textContent = boss ? 'HECHIZOS' : 'CACAS';
     if (boss) this.spellBar.classList.add('is-visible');
     this.setSelectedSpell('star');
-    this.updateScore(level, score, target);
+    this.updateScore(level, score, target, bowserScore, bowserLimit);
+  }
+
+  showFailed(timing: GameTiming, bowserScore: number, bowserLimit: number): void {
+    this.hideAll();
+    this.failed.classList.add('is-visible');
+    this.hud.classList.add('is-visible');
+    byId('failed-bowser-score').textContent = String(bowserScore);
+    byId('failed-bowser-limit').textContent = String(bowserLimit);
+    byId('failed-level-time').textContent = formatDuration(timing.levelMs);
+    byId('failed-total-time').textContent = formatDuration(timing.totalMs);
+    byId<HTMLButtonElement>('retry-button').focus({ preventScroll: true });
   }
 
   showComplete(timing: GameTiming): void {
@@ -90,10 +106,12 @@ export class GameUi {
     byId<HTMLButtonElement>('replay-button').focus({ preventScroll: true });
   }
 
-  updateScore(level: number, score: number, target: number): void {
+  updateScore(level: number, score: number, target: number, bowserScore: number, bowserLimit: number): void {
     this.levelValue.textContent = String(level);
     this.scoreValue.textContent = String(score);
     this.targetValue.textContent = String(target);
+    this.bowserValue.textContent = String(bowserScore);
+    this.bowserLimitValue.textContent = String(bowserLimit);
   }
 
   updateTimer(timing: GameTiming): void {
@@ -115,7 +133,7 @@ export class GameUi {
   }
 
   private hideAll(): void {
-    [this.loading, this.title, this.complete, this.final, this.hud].forEach((element) => element.classList.remove('is-visible'));
+    [this.loading, this.title, this.failed, this.complete, this.final, this.hud].forEach((element) => element.classList.remove('is-visible'));
     this.spellBar.classList.remove('is-visible');
   }
 }

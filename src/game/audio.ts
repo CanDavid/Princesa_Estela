@@ -48,6 +48,11 @@ export class GameAudio {
     this.tone(180, 0.09, 'sine', 0.035, 140);
   }
 
+  danger(): void {
+    this.tone(220, 0.16, 'square', 0.055, 120);
+    window.setTimeout(() => this.tone(150, 0.2, 'triangle', 0.05, 90), 90);
+  }
+
   sparkle(): void {
     this.tone(660, 0.16, 'sine', 0.08, 990);
     window.setTimeout(() => this.tone(990, 0.18, 'sine', 0.07, 1320), 80);

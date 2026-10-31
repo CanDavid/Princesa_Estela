@@ -27,6 +27,7 @@
         <header id="hud" class="hud" aria-live="polite">
           <div class="hud-pill"><span>NIVEL</span><strong id="level-value">1</strong></div>
           <div class="hud-pill timer-pill"><span>TIEMPO</span><strong id="timer-value">00:00.0</strong></div>
+          <div class="hud-pill bowser-pill"><span>PUNTOS BOWSER</span><strong><span id="bowser-value">0</span>/<span id="bowser-limit-value">6</span></strong></div>
           <div class="hud-pill score-pill"><span id="score-label">CACAS</span><strong><span id="score-value">0</span>/<span id="target-value">12</span></strong></div>
           <button id="mute-button" class="icon-button" type="button" aria-label="SILENCIAR SONIDO" aria-pressed="false">🔊</button>
         </header>
@@ -39,6 +40,17 @@
             <button class="spell-button" type="button" data-spell="rainbow" aria-pressed="false">🌈 ARCOÍRIS</button>
           </div>
         </div>
+
+        <section id="failed-screen" class="screen-panel" aria-labelledby="failed-title">
+          <div class="modal-card failed-card">
+            <p class="bowser-row" aria-hidden="true">✦ 💜 ✦</p>
+            <h2 id="failed-title">¡NIVEL PERDIDO!</h2>
+            <p>HAS ALCANZADO EL MÁXIMO DE PUNTOS BOWSER.</p>
+            <p class="bowser-result">PUNTOS BOWSER: <strong id="failed-bowser-score">0</strong>/<strong id="failed-bowser-limit">6</strong></p>
+            <p class="time-result">NIVEL: <strong id="failed-level-time">00:00.0</strong> · TOTAL: <strong id="failed-total-time">00:00.0</strong></p>
+            <button id="retry-button" class="primary-button" type="button">REINTENTAR NIVEL</button>
+          </div>
+        </section>
 
         <section id="complete-screen" class="screen-panel" aria-labelledby="complete-title">
           <div class="modal-card celebration-card">

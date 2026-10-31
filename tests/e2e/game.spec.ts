@@ -16,7 +16,9 @@ test('cada enjambre nace completo, disminuye y permite avanzar', async ({ page }
   await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
   await expect(page.locator('#level-value')).toHaveText('1');
   await expect(page.locator('#target-value')).toHaveText('12');
+  await expect(page.locator('#bowser-limit-value')).toHaveText('6');
   await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(12);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bowserBugCount())).toBe(8);
   await scorePoints(page, 1);
   await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(11);
   await page.waitForTimeout(500);
@@ -29,6 +31,7 @@ test('cada enjambre nace completo, disminuye y permite avanzar', async ({ page }
   await expect(page.locator('#level-value')).toHaveText('2');
   await expect(page.locator('#score-value')).toHaveText('0');
   await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(14);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bowserBugCount())).toBe(9);
   await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
 });
 
@@ -39,6 +42,36 @@ test('el noveno nivel empieza con sus 28 cacas rápidas', async ({ page }) => {
   await expect(page.locator('#level-value')).toHaveText('9');
   await expect(page.locator('#target-value')).toHaveText('28');
   await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(28);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bowserBugCount())).toBe(16);
+});
+
+test('los puntos Bowser provocan derrota y el reintento conserva el tiempo', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'INICIO' }).click();
+  await expect(page.locator('#bowser-value')).toHaveText('0');
+  await expect(page.locator('#bowser-limit-value')).toHaveText('6');
+  for (let point = 1; point <= 6; point += 1) {
+    await page.evaluate(() => window.__ESTELA_TEST__?.scoreBowserPoint());
+    await expect(page.locator('#bowser-value')).toHaveText(String(point));
+  }
+  await expect(page.getByRole('heading', { name: '¡NIVEL PERDIDO!' })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Failed']);
+  await expect(page.locator('#failed-bowser-score')).toHaveText('6');
+  const elapsedBeforeRetry = await page.evaluate(() => window.__ESTELA_TEST__?.state().timing.levelMs ?? 0);
+  const frozenTime = await page.locator('#failed-level-time').textContent();
+  await page.waitForTimeout(500);
+  await expect(page.locator('#failed-level-time')).toHaveText(frozenTime ?? '');
+
+  await page.getByRole('button', { name: 'REINTENTAR NIVEL' }).click();
+  await expect(page.locator('#level-value')).toHaveText('1');
+  await expect(page.locator('#score-value')).toHaveText('0');
+  await expect(page.locator('#bowser-value')).toHaveText('0');
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(12);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bowserBugCount())).toBe(8);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.state().timing.levelMs ?? 0)).toBeGreaterThan(elapsedBeforeRetry);
+  const failedText = await page.locator('#failed-screen').innerText();
+  expect(failedText).toBe(failedText.toLocaleUpperCase('es'));
 });
 
 test('el jefe permite elegir hechizo y cae después de cinco impactos', async ({ page }) => {
@@ -47,11 +80,15 @@ test('el jefe permite elegir hechizo y cae después de cinco impactos', async ({
   await page.evaluate(() => window.__ESTELA_TEST__?.startLevel(10));
   await expect(page.locator('#spell-bar')).toHaveClass(/is-visible/);
   await expect(page.locator('#score-label')).toHaveText('HECHIZOS');
-  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugCount())).toBe(1);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bossPosition())).toBeTruthy();
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bowserBugCount())).toBe(5);
   await page.getByRole('button', { name: '⚡ RAYO' }).click();
   await expect(page.getByRole('button', { name: '⚡ RAYO' })).toHaveAttribute('aria-pressed', 'true');
+  const minion = await page.evaluate(() => window.__ESTELA_TEST__?.bowserPosition());
+  await page.mouse.click(minion?.x ?? 500, minion?.y ?? 450);
+  await expect(page.locator('#bowser-value')).toHaveText('1');
   for (let hit = 1; hit <= 5; hit += 1) {
-    const boss = await page.evaluate(() => window.__ESTELA_TEST__?.bugPosition());
+    const boss = await page.evaluate(() => window.__ESTELA_TEST__?.bossPosition());
     await page.mouse.click(boss?.x ?? 820, boss?.y ?? 310);
     await expect(page.locator('#score-value')).toHaveText(String(hit));
   }

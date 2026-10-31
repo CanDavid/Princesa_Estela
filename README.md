@@ -28,13 +28,14 @@ npm run check      # Tipos, pruebas y compilación
 ## Cómo se juega
 
 1. Pulsa **INICIO** para activar el sonido y empezar.
-2. Toca un bichito para que Estela lance la red hacia él.
-3. Cada captura suma una estrella. Fallar no resta nada.
-4. En los niveles 1 a 9, todas las cacas están presentes desde el principio y cada captura deja una menos.
-5. En el nivel 10, elige un hechizo y acierta cinco veces a la caca gigante.
-6. Pulsa **¡A POR EL SIGUIENTE NIVEL!** tras superar los niveles 1 a 9.
+2. Captura todas las cacas marrones y evita las cacas Bowser moradas.
+3. El HUD muestra los puntos Bowser actuales y el límite del nivel. Al alcanzar ese límite se pierde el nivel.
+4. Pulsa **REINTENTAR NIVEL** para empezar de nuevo sin borrar el tiempo de los intentos anteriores.
+5. En los niveles 1 a 9, todas las cacas están presentes desde el principio y cada captura deja una menos.
+6. En el nivel 10, elige un hechizo, acierta cinco veces a la caca gigante y evita sus cinco secuaces morados.
+7. Pulsa **¡A POR EL SIGUIENTE NIVEL!** tras superar los niveles 1 a 9.
 
-El cronómetro del HUD mide el tiempo de juego. Cada celebración muestra el tiempo del nivel y el acumulado de la aventura; las pausas y el tiempo esperando en la celebración no cuentan.
+El cronómetro del HUD mide el tiempo de juego. Cada celebración muestra el tiempo del nivel y el acumulado de la aventura; las pausas, las pantallas de derrota y el tiempo esperando en la celebración no cuentan.
 
 La música y los efectos se pueden silenciar en cualquier momento. La partida comienza de nuevo al recargar la página.
 

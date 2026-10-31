@@ -27,7 +27,9 @@ describe('configuración de niveles', () => {
       expect(current.minSpeed).toBeGreaterThan(previous.minSpeed);
       expect(current.maxSpeed).toBeGreaterThan(previous.maxSpeed);
     }
-    expect(LEVELS[9]).toMatchObject({ id: 10, kind: 'boss', targetScore: 5, bugCount: 1 });
+    expect(swarms.every((level) => level.bowserLimit === level.targetScore / 2)).toBe(true);
+    expect(swarms.every((level) => level.bowserCount === level.bowserLimit + 2)).toBe(true);
+    expect(LEVELS[9]).toMatchObject({ id: 10, kind: 'boss', targetScore: 5, bugCount: 1, bowserLimit: 3, bowserCount: 5 });
   });
 });
 
@@ -43,20 +45,20 @@ describe('GameSession', () => {
   it('un fallo no modifica la puntuación ni termina la partida', () => {
     const session = new GameSession();
     session.startGame();
-    expect(session.recordCapture(false)).toMatchObject({ hit: false, score: 0, completed: false, status: 'playing' });
+    expect(session.recordCapture('miss')).toMatchObject({ hit: false, score: 0, bowserScore: 0, completed: false, failed: false, status: 'playing' });
   });
 
   it('cada acierto suma exactamente un punto', () => {
     const session = new GameSession();
     session.startGame();
-    expect(session.recordCapture(true).score).toBe(1);
-    expect(session.recordCapture(true).score).toBe(2);
+    expect(session.recordCapture('good').score).toBe(1);
+    expect(session.recordCapture('good').score).toBe(2);
   });
 
   it('avanza al nivel siguiente y reinicia su marcador', () => {
     const session = new GameSession();
     session.startGame();
-    for (let index = 0; index < session.level.targetScore; index += 1) session.recordCapture(true);
+    for (let index = 0; index < session.level.targetScore; index += 1) session.recordCapture('good');
     expect(session.status).toBe('level-complete');
     session.advanceLevel();
     expect(session.level.id).toBe(2);
@@ -68,7 +70,7 @@ describe('GameSession', () => {
     const session = new GameSession();
     session.startGame();
     for (let levelIndex = 0; levelIndex < LEVELS.length; levelIndex += 1) {
-      for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture(true);
+      for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture('good');
       if (levelIndex < LEVELS.length - 1) session.advanceLevel();
     }
     expect(session.level.id).toBe(10);
@@ -81,7 +83,7 @@ describe('GameSession', () => {
     const session = new GameSession(() => now);
     session.startGame();
     now += 2_500;
-    for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture(true);
+    for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture('good');
     expect(session.timing).toEqual({ levelMs: 2_500, totalMs: 2_500 });
 
     now += 8_000;
@@ -91,7 +93,7 @@ describe('GameSession', () => {
     now += 5_000;
     session.resumeTimer();
     now += 800;
-    for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture(true);
+    for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture('good');
     expect(session.timing).toEqual({ levelMs: 2_000, totalMs: 4_500 });
   });
 
@@ -99,8 +101,34 @@ describe('GameSession', () => {
     const session = new GameSession();
     session.startGame();
     session.muted = true;
-    session.recordCapture(true);
+    session.recordCapture('good');
     session.reset();
     expect(session).toMatchObject({ levelIndex: 0, score: 0, status: 'title', muted: true });
+  });
+
+  it('pierde exactamente al alcanzar el límite Bowser', () => {
+    const session = new GameSession();
+    session.startGame();
+    for (let point = 1; point < session.level.bowserLimit; point += 1) {
+      expect(session.recordCapture('bowser')).toMatchObject({ bowserScore: point, failed: false, status: 'playing' });
+    }
+    expect(session.recordCapture('bowser')).toMatchObject({ bowserScore: 6, failed: true, status: 'level-failed' });
+    expect(session.recordCapture('good')).toMatchObject({ hit: false, score: 0, status: 'level-failed' });
+  });
+
+  it('reintenta con marcadores a cero y conserva el tiempo de los intentos', () => {
+    let now = 1_000;
+    const session = new GameSession(() => now);
+    session.startGame();
+    now = 4_000;
+    for (let point = 0; point < session.level.bowserLimit; point += 1) session.recordCapture('bowser');
+    expect(session.timing).toEqual({ levelMs: 3_000, totalMs: 3_000 });
+
+    now = 9_000;
+    expect(session.timing).toEqual({ levelMs: 3_000, totalMs: 3_000 });
+    session.retryLevel();
+    expect(session).toMatchObject({ score: 0, bowserScore: 0, status: 'playing' });
+    now = 11_000;
+    expect(session.timing).toEqual({ levelMs: 5_000, totalMs: 5_000 });
   });
 });

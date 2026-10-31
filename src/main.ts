@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import './style.css';
 import { GameAudio } from './game/audio';
-import { BootScene, CompleteScene, FinalScene, GameScene, TitleScene } from './game/scenes';
+import { BootScene, CompleteScene, FailedScene, FinalScene, GameScene, TitleScene } from './game/scenes';
 import { GameSession } from './game/session';
 import { GameUi } from './ui';
 
@@ -29,12 +29,13 @@ const game = new Phaser.Game({
     new BootScene(services),
     new TitleScene(services),
     new GameScene(services),
+    new FailedScene(services),
     new CompleteScene(services),
     new FinalScene(services),
   ],
 });
 
-function openGameFrom(sceneKey: 'Title' | 'Complete' | 'Final'): void {
+function openGameFrom(sceneKey: 'Title' | 'Failed' | 'Complete' | 'Final'): void {
   if (game.scene.isActive(sceneKey)) game.scene.stop(sceneKey);
   game.scene.start('Game');
   game.scene.bringToTop('Game');
@@ -55,6 +56,11 @@ ui.bind({
     session.reset();
     session.startGame();
     openGameFrom('Final');
+  },
+  retry: () => {
+    if (session.status !== 'level-failed') return;
+    session.retryLevel();
+    openGameFrom('Failed');
   },
   toggleMute: () => {
     session.muted = !session.muted;
@@ -82,7 +88,7 @@ if (import.meta.env.DEV) {
     startLevel: (levelNumber) => {
       session.startGame();
       for (let index = 1; index < levelNumber; index += 1) {
-        for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture(true);
+        for (let score = 0; score < session.level.targetScore; score += 1) session.recordCapture('good');
         session.advanceLevel();
       }
       for (const scene of game.scene.getScenes(true)) game.scene.stop(scene.scene.key);
@@ -93,20 +99,36 @@ if (import.meta.env.DEV) {
       const scene = game.scene.getScene('Game');
       if (scene instanceof GameScene) scene.debugScorePoint();
     },
+    scoreBowserPoint: () => {
+      const scene = game.scene.getScene('Game');
+      if (scene instanceof GameScene) scene.debugScoreBowserPoint();
+    },
     bugPosition: () => {
       const scene = game.scene.getScene('Game');
       return scene instanceof GameScene ? scene.debugBugPosition() : undefined;
     },
+    bowserPosition: () => {
+      const scene = game.scene.getScene('Game');
+      return scene instanceof GameScene ? scene.debugBugPosition('bowser') : undefined;
+    },
+    bossPosition: () => {
+      const scene = game.scene.getScene('Game');
+      return scene instanceof GameScene ? scene.debugBugPosition('boss') : undefined;
+    },
     bugCount: () => {
       const scene = game.scene.getScene('Game');
       return scene instanceof GameScene ? scene.debugBugCount() : 0;
+    },
+    bowserBugCount: () => {
+      const scene = game.scene.getScene('Game');
+      return scene instanceof GameScene ? scene.debugBugCount('bowser') : 0;
     },
     characterState: () => {
       const scene = game.scene.getScene('Game');
       return scene instanceof GameScene ? scene.debugCharacterState() : undefined;
     },
     activeScenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
-    state: () => ({ level: session.levelIndex + 1, score: session.score, status: session.status, muted: session.muted, timing: session.timing }),
+    state: () => ({ level: session.levelIndex + 1, score: session.score, bowserScore: session.bowserScore, status: session.status, muted: session.muted, timing: session.timing }),
   };
 }
 
@@ -115,11 +137,15 @@ declare global {
     __ESTELA_TEST__?: {
       startLevel: (levelNumber: number) => void;
       scorePoint: () => void;
+      scoreBowserPoint: () => void;
       bugPosition: () => { x: number; y: number } | undefined;
+      bowserPosition: () => { x: number; y: number } | undefined;
+      bossPosition: () => { x: number; y: number } | undefined;
       bugCount: () => number;
+      bowserBugCount: () => number;
       characterState: () => { estela: string; lumi: string; lumiVisible: boolean } | undefined;
       activeScenes: () => string[];
-      state: () => { level: number; score: number; status: string; muted: boolean; timing: { levelMs: number; totalMs: number } };
+      state: () => { level: number; score: number; bowserScore: number; status: string; muted: boolean; timing: { levelMs: number; totalMs: number } };
     };
   }
 }

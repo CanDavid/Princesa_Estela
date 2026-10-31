@@ -11,17 +11,22 @@ function polygon(cx: number, cy: number, radius: number, points: number, innerRa
 export function createArtTextures(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
 
-  // Bichito alado, cómico y amable.
-  g.fillStyle(0xe8f7ff, 0.92).fillEllipse(34, 42, 52, 42).fillEllipse(102, 42, 52, 42);
-  g.lineStyle(4, 0x80b8d4, 0.8).strokeEllipse(34, 42, 52, 42).strokeEllipse(102, 42, 52, 42);
-  g.fillStyle(0x9a5a34).fillEllipse(68, 53, 76, 64);
-  g.fillStyle(0xb97343).fillCircle(68, 27, 25);
-  g.fillStyle(0xffffff).fillCircle(58, 25, 9).fillCircle(78, 25, 9);
-  g.fillStyle(0x40251f).fillCircle(60, 27, 4).fillCircle(76, 27, 4);
-  g.lineStyle(4, 0x4d2b23, 1).beginPath().arc(68, 44, 13, 0.15, Math.PI - 0.15).strokePath();
-  g.fillStyle(0xe99970).fillCircle(45, 42, 6).fillCircle(91, 42, 6);
-  g.generateTexture('bug', 136, 90);
-  g.clear();
+  const drawBug = (texture: string, body: number, head: number, cheeks: number, wingOutline: number): void => {
+    g.fillStyle(0xe8f7ff, 0.92).fillEllipse(34, 42, 52, 42).fillEllipse(102, 42, 52, 42);
+    g.lineStyle(4, wingOutline, 0.85).strokeEllipse(34, 42, 52, 42).strokeEllipse(102, 42, 52, 42);
+    g.fillStyle(body).fillEllipse(68, 53, 76, 64);
+    g.fillStyle(head).fillCircle(68, 27, 25);
+    g.fillStyle(0xffffff).fillCircle(58, 25, 9).fillCircle(78, 25, 9);
+    g.fillStyle(0x40251f).fillCircle(60, 27, 4).fillCircle(76, 27, 4);
+    g.lineStyle(4, 0x4d2b23, 1).beginPath().arc(68, 44, 13, 0.15, Math.PI - 0.15).strokePath();
+    g.fillStyle(cheeks).fillCircle(45, 42, 6).fillCircle(91, 42, 6);
+    g.generateTexture(texture, 136, 90);
+    g.clear();
+  };
+
+  // Cacas aladas marrones y Bowser moradas, con silueta idéntica para que el color sea la pista principal.
+  drawBug('bug', 0x9a5a34, 0xb97343, 0xe99970, 0x80b8d4);
+  drawBug('bowser-bug', 0x7b35b2, 0xa653d1, 0xff8ac8, 0xd991ff);
 
   // Hada celebratoria.
   g.fillStyle(0xe7fbff, 0.72).fillEllipse(46, 80, 48, 86).fillEllipse(118, 80, 48, 86);
