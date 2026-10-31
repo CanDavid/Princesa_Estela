@@ -2,6 +2,8 @@
 
 Juego web táctil infantil creado para Ona y Pau. Ayuda a Estela a capturar bichitos voladores con su cazamariposas a lo largo de tres niveles, sin vidas, tiempo ni penalizaciones.
 
+Estela utiliza su diseño animado oficial y está acompañada por Lumi, una estrella flotante que reacciona a la magia y celebra cada nivel.
+
 ## Jugar y desarrollar
 
 Requiere Node.js 22 o posterior.
@@ -37,3 +39,5 @@ La música y los efectos se pueden silenciar en cualquier momento. La partida co
 La compilación usa la ruta `/Princesa_Estela/`. El workflow `Comprobar y publicar en GitHub Pages` valida y publica el sitio al actualizar `main`, y también puede iniciarse manualmente desde GitHub Actions. En la configuración del repositorio, Pages debe usar **GitHub Actions** como origen.
 
 El escenario y los personajes son recursos originales del proyecto. Los dibujos de la familia se conservan en `docs/referencias/` como origen creativo.
+
+La especificación de sprites, anclajes y animaciones está documentada en `docs/SPRITES_ESTELA.md`.

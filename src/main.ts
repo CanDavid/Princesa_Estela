@@ -72,6 +72,10 @@ if (import.meta.env.DEV) {
       const scene = game.scene.getScene('Game');
       return scene instanceof GameScene ? scene.debugBugPosition() : undefined;
     },
+    characterState: () => {
+      const scene = game.scene.getScene('Game');
+      return scene instanceof GameScene ? scene.debugCharacterState() : undefined;
+    },
     state: () => ({ level: session.levelIndex + 1, score: session.score, status: session.status, muted: session.muted }),
   };
 }
@@ -81,6 +85,7 @@ declare global {
     __ESTELA_TEST__?: {
       scorePoint: () => void;
       bugPosition: () => { x: number; y: number } | undefined;
+      characterState: () => { estela: string; lumi: string; lumiVisible: boolean } | undefined;
       state: () => { level: number; score: number; status: string; muted: boolean };
     };
   }

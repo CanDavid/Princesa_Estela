@@ -12,6 +12,8 @@
 - Tras los niveles 1 y 2 aparece el hada con el botón «Siguiente nivel».
 - El tercer nivel termina con «¡Aventura completada!» y permite volver a jugar.
 - Música y efectos originales con control para silenciarlos durante la sesión.
+- Estela usa sprites animados consistentes y Lumi la acompaña en todas las escenas.
+- La magia de Estela anticipa el lanzamiento del cazamariposas sin alterar el control por toque.
 
 ## Controles
 

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GameAudio } from './audio';
 import { createArtTextures } from './art';
+import { createEstelaRig, preloadCharacter, registerCharacterAnimations, type EstelaRig } from './character';
 import { GameSession } from './session';
 import { GameUi } from '../ui';
 
@@ -50,10 +51,12 @@ export class BootScene extends Phaser.Scene {
   preload(): void {
     this.services.ui.showLoading();
     this.load.image('castle-garden', `${import.meta.env.BASE_URL}assets/castle-garden.png`);
+    preloadCharacter(this);
   }
 
   create(): void {
     createArtTextures(this);
+    registerCharacterAnimations(this);
     this.scene.start('Title');
   }
 }
@@ -66,10 +69,10 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     background(this);
     const glow = this.add.image(210, 505, 'glow').setScale(2.4).setAlpha(0.34);
-    const estela = this.add.image(210, 515, 'estela').setScale(0.86).setOrigin(0.5, 0.75);
+    const estela = createEstelaRig(this, 205, 636, 1.06).setDepth(4);
     const net = this.add.image(310, 520, 'net').setScale(0.58).setRotation(-0.18);
     addFloatingStars(this, 10, new Phaser.Geom.Rectangle(40, 70, 520, 520));
-    this.tweens.add({ targets: [estela, net, glow], y: '-=10', duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    this.tweens.add({ targets: [estela.root, net, glow], y: '-=10', duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     this.services.ui.showTitle();
   }
 }
@@ -78,7 +81,7 @@ export class GameScene extends Phaser.Scene {
   private readonly bugs: FlyingBug[] = [];
   private inputLocked = false;
   private ending = false;
-  private princess?: Phaser.GameObjects.Image;
+  private estelaRig?: EstelaRig;
 
   constructor(private readonly services: SceneServices) {
     super('Game');
@@ -90,8 +93,8 @@ export class GameScene extends Phaser.Scene {
     this.ending = false;
     background(this);
     this.add.rectangle(640, 360, 1280, 720, 0xfff4ca, 0.035);
-    this.princess = this.add.image(145, 600, 'estela').setScale(0.72).setOrigin(0.5, 0.82).setDepth(8);
-    this.add.image(208, 584, 'net').setScale(0.36).setRotation(-0.23).setDepth(7).setAlpha(0.82);
+    this.estelaRig = createEstelaRig(this, 150, 654, 0.88).setDepth(8);
+    this.add.image(215, 614, 'net').setScale(0.34).setRotation(-0.23).setDepth(7).setAlpha(0.86);
 
     const { level } = this.services.session;
     this.services.ui.showGame(level.id, this.services.session.score, level.targetScore);
@@ -143,15 +146,25 @@ export class GameScene extends Phaser.Scene {
     return bug ? { x: bug.x, y: bug.y } : undefined;
   }
 
+  debugCharacterState(): { estela: string; lumi: string; lumiVisible: boolean } | undefined {
+    if (!this.estelaRig) return undefined;
+    return {
+      estela: this.estelaRig.estela.anims.currentAnim?.key ?? '',
+      lumi: this.estelaRig.lumi.anims.currentAnim?.key ?? '',
+      lumiVisible: this.estelaRig.lumi.visible,
+    };
+  }
+
   private handleCapture(pointer: Phaser.Input.Pointer): void {
     if (this.inputLocked || this.ending || this.services.session.status !== 'playing') return;
     this.inputLocked = true;
     const targetX = Phaser.Math.Clamp(pointer.worldX, 275, 1220);
     const targetY = Phaser.Math.Clamp(pointer.worldY, 90, 590);
-    const originX = this.princess?.x ?? 150;
-    const originY = (this.princess?.y ?? 600) - 40;
+    const originX = this.estelaRig?.root.x ?? 150;
+    const originY = (this.estelaRig?.root.y ?? 654) - 90;
     const rotation = Phaser.Math.Angle.Between(originX, originY, targetX, targetY) + 0.72;
     const net = this.add.image(originX + 45, originY, 'net').setOrigin(0.11, 0.86).setScale(0.28).setRotation(rotation).setDepth(12).setAlpha(0.92);
+    this.estelaRig?.play('magic', true).playLumi('react', true);
     this.services.audio.net();
 
     const hit = this.bugs
@@ -244,7 +257,7 @@ export class CompleteScene extends Phaser.Scene {
   create(): void {
     background(this, 0xffe8ff);
     this.add.rectangle(640, 360, 1280, 720, 0x512257, 0.22);
-    this.add.image(170, 565, 'estela').setScale(0.65).setOrigin(0.5, 0.78);
+    createEstelaRig(this, 175, 646, 0.84).setDepth(5).play('celebrate').playLumi('celebrate');
     const fairy = this.add.image(950, 300, 'fairy').setScale(0.94).setDepth(5);
     const glow = this.add.image(950, 300, 'glow').setScale(2.2).setAlpha(0.5);
     addFloatingStars(this, 18, new Phaser.Geom.Rectangle(650, 80, 500, 470));
@@ -262,11 +275,11 @@ export class FinalScene extends Phaser.Scene {
   create(): void {
     background(this, 0xfff0d6);
     this.add.rectangle(640, 360, 1280, 720, 0x6d1d65, 0.18);
-    const estela = this.add.image(190, 555, 'estela').setScale(0.72).setOrigin(0.5, 0.78);
+    const estela = createEstelaRig(this, 190, 648, 0.9).setDepth(5).play('celebrate').playLumi('celebrate');
     const fairy = this.add.image(1040, 265, 'fairy').setScale(1.06);
     this.add.image(1040, 265, 'glow').setScale(2.8).setAlpha(0.54);
     addFloatingStars(this, 28, new Phaser.Geom.Rectangle(50, 40, 1160, 590));
-    this.tweens.add({ targets: estela, angle: { from: -2, to: 2 }, duration: 650, yoyo: true, repeat: -1 });
+    this.tweens.add({ targets: estela.root, angle: { from: -2, to: 2 }, duration: 650, yoyo: true, repeat: -1 });
     this.tweens.add({ targets: fairy, y: '-=28', duration: 820, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     this.services.audio.fanfare();
     this.services.ui.showFinal();

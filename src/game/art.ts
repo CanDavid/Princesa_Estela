@@ -11,26 +11,6 @@ function polygon(cx: number, cy: number, radius: number, points: number, innerRa
 export function createArtTextures(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
 
-  // Estela: una princesa original, construida en capas para conservar una silueta clara.
-  g.fillStyle(0x5b2b24).fillCircle(128, 92, 62).fillCircle(91, 116, 40).fillCircle(163, 115, 42);
-  g.fillStyle(0xf4ba72).fillTriangle(92, 35, 112, 2, 126, 39).fillTriangle(116, 34, 140, 0, 151, 40).fillTriangle(141, 38, 169, 9, 176, 49);
-  g.fillStyle(0xffdf57).fillTriangle(93, 42, 111, 6, 125, 42).fillTriangle(116, 40, 140, 3, 153, 42).fillTriangle(143, 42, 170, 11, 176, 47).fillRect(95, 38, 80, 22);
-  g.lineStyle(5, 0xc87b20, 1).strokeRect(96, 39, 78, 20);
-  g.fillStyle(0xffd0ad).fillCircle(132, 91, 46);
-  g.fillStyle(0x4a2424).fillCircle(115, 88, 4).fillCircle(148, 88, 4);
-  g.lineStyle(4, 0xc96d73, 1).beginPath().arc(132, 99, 14, 0.2, Math.PI - 0.2).strokePath();
-  g.fillStyle(0xff8fbc).fillCircle(105, 103, 8).fillCircle(159, 103, 8);
-  g.fillStyle(0xff8dbd).fillCircle(87, 161, 27).fillCircle(179, 161, 27);
-  g.fillStyle(0xffc8df).fillCircle(87, 155, 20).fillCircle(179, 155, 20);
-  g.fillStyle(0xf3539d).fillRoundedRect(94, 128, 77, 92, 28);
-  g.fillStyle(0xd62c87).fillTriangle(132, 177, 43, 332, 221, 332);
-  g.fillStyle(0xf558a5).fillTriangle(132, 168, 74, 332, 190, 332);
-  g.fillStyle(0xff9cca).fillTriangle(132, 176, 108, 330, 159, 330);
-  g.fillStyle(0xffd94c).fillCircle(132, 190, 9);
-  g.lineStyle(5, 0xffffff, 0.5).beginPath().moveTo(104, 145).lineTo(132, 190).lineTo(160, 145).strokePath();
-  g.generateTexture('estela', 265, 340);
-  g.clear();
-
   // Bichito alado, cómico y amable.
   g.fillStyle(0xe8f7ff, 0.92).fillEllipse(34, 42, 52, 42).fillEllipse(102, 42, 52, 42);
   g.lineStyle(4, 0x80b8d4, 0.8).strokeEllipse(34, 42, 52, 42).strokeEllipse(102, 42, 52, 42);

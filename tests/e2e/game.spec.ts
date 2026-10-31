@@ -44,9 +44,16 @@ test('el control de sonido cambia de estado durante la sesión', async ({ page }
 test('un fallo no puntúa y un toque sobre un bicho sí', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'INICIO' }).click();
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.characterState())).toMatchObject({
+    estela: 'estela-idle',
+    lumi: 'lumi-idle',
+    lumiVisible: true,
+  });
   await page.mouse.click(300, 650);
   await expect(page.locator('#score-value')).toHaveText('0');
-  await page.waitForTimeout(450);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.characterState()?.estela)).toBe('estela-magic');
+  await page.waitForTimeout(600);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.characterState()?.estela)).toBe('estela-idle');
   const bug = await page.evaluate(() => window.__ESTELA_TEST__?.bugPosition());
   expect(bug).toBeTruthy();
   await page.mouse.click(bug?.x ?? 700, bug?.y ?? 300);
