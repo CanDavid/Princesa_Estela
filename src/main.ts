@@ -34,21 +34,27 @@ const game = new Phaser.Game({
   ],
 });
 
+function openGameFrom(sceneKey: 'Title' | 'Complete' | 'Final'): void {
+  if (game.scene.isActive(sceneKey)) game.scene.stop(sceneKey);
+  game.scene.start('Game');
+  game.scene.bringToTop('Game');
+}
+
 ui.bind({
   start: () => {
     void audio.unlock();
     session.startGame();
-    game.scene.start('Game');
+    openGameFrom('Title');
   },
   next: () => {
     if (session.status !== 'level-complete') return;
     session.advanceLevel();
-    game.scene.start('Game');
+    openGameFrom('Complete');
   },
   replay: () => {
     session.reset();
     session.startGame();
-    game.scene.start('Game');
+    openGameFrom('Final');
   },
   toggleMute: () => {
     session.muted = !session.muted;
@@ -77,6 +83,7 @@ if (import.meta.env.DEV) {
       const scene = game.scene.getScene('Game');
       return scene instanceof GameScene ? scene.debugCharacterState() : undefined;
     },
+    activeScenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
     state: () => ({ level: session.levelIndex + 1, score: session.score, status: session.status, muted: session.muted }),
   };
 }
@@ -87,6 +94,7 @@ declare global {
       scorePoint: () => void;
       bugPosition: () => { x: number; y: number } | undefined;
       characterState: () => { estela: string; lumi: string; lumiVisible: boolean } | undefined;
+      activeScenes: () => string[];
       state: () => { level: number; score: number; status: string; muted: boolean };
     };
   }

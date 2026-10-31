@@ -14,6 +14,7 @@ test('permite completar los tres niveles y volver a jugar', async ({ page }) => 
   await page.getByRole('button', { name: 'INICIO' }).click();
   await expect(page.locator('#hud')).toHaveClass(/is-visible/);
   await expect(page.locator('#level-value')).toHaveText('1');
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
   await scorePoints(page, 5);
   await expect(page.getByRole('heading', { name: '¡NIVEL SUPERADO!' })).toBeVisible();
 
@@ -21,6 +22,8 @@ test('permite completar los tres niveles y volver a jugar', async ({ page }) => 
   await expect(page.locator('#level-value')).toHaveText('2');
   await expect(page.locator('#score-value')).toHaveText('0');
   await expect(page.locator('#complete-screen')).not.toHaveClass(/is-visible/);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugPosition())).toBeTruthy();
   await scorePoints(page, 8);
   await expect(page.getByRole('heading', { name: '¡NIVEL SUPERADO!' })).toBeVisible();
 
@@ -28,12 +31,15 @@ test('permite completar los tres niveles y volver a jugar', async ({ page }) => 
   await expect(page.locator('#level-value')).toHaveText('3');
   await expect(page.locator('#score-value')).toHaveText('0');
   await expect(page.locator('#complete-screen')).not.toHaveClass(/is-visible/);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.bugPosition())).toBeTruthy();
   await scorePoints(page, 12);
   await expect(page.getByRole('heading', { name: '¡AVENTURA COMPLETADA!' })).toBeVisible();
 
   await page.getByRole('button', { name: 'JUGAR OTRA VEZ' }).click();
   await expect(page.locator('#level-value')).toHaveText('1');
   await expect(page.locator('#score-value')).toHaveText('0');
+  await expect.poll(() => page.evaluate(() => window.__ESTELA_TEST__?.activeScenes())).toEqual(['Game']);
 });
 
 test('el control de sonido cambia de estado durante la sesión', async ({ page }) => {
